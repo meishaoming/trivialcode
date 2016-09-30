@@ -35,3 +35,12 @@ muduo 中有个 Buffer 的实现与 ByteBuffer 类似，主要区别有：
 
 这里抽出 ByteBuffer 和 它的单元测试。去掉了其中对 Buffer 类的依赖，因为 Buffer 里使用了 scoped_ptr。
 
+---
+
+今天更新了一下 webrtc，发现 bytebuffer 部分的代码更新了。
+
+新的代码里，把 bytebuffer 分成了 ByteBufferReader 和 ByteBufferWriter，分别作为「只读」和「只写」的缓冲区。也就是说不可能有一个缓冲区同时可以读也可以写。
+
+这样的写法也合理，在 Reactor 模式中地应用缓冲区也就是这种用法。就像 Libevent 的缓冲区 evbuffer，在 bufferevent 里就有 input 和 output 两种，读写分开。
+
+
