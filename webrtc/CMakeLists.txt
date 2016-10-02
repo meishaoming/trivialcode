@@ -112,3 +112,6 @@ target_link_libraries(rtc_task_queue rtc_base_approved)
 
 add_executable(test_event test_event.cc)
 target_link_libraries(test_event rtc_base_approved)
+
+add_executable(test_taskqueue test_taskqueue.cc)
+target_link_libraries(test_taskqueue rtc_task_queue)
