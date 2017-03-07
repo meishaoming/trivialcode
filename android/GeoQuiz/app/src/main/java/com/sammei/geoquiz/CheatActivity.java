@@ -10,6 +10,9 @@ import android.widget.TextView;
 
 public class CheatActivity extends AppCompatActivity {
 
+    private static final String KEY_HAS_SHOW_ANSWER = "show_answer";
+    private boolean mHasShowAnswer;
+
     private static final String EXTRA_ANSWER_IS_TRUE = "com.sammei.geoquiz.answer_is_true";
     private static final String EXTRA_ANSWER_SHOWN = "com.sammei.geoquiz.answer_shown";
     private boolean mAnswerIsTrue;
@@ -46,10 +49,15 @@ public class CheatActivity extends AppCompatActivity {
                     mAnswerTextView.setText(R.string.false_button);
                 }
 
-                setAnswerShownResult(true);
+                mHasShowAnswer = true;
+                setAnswerShownResult(mHasShowAnswer);
             }
         });
 
+        if (savedInstanceState != null) {
+            mHasShowAnswer = savedInstanceState.getBoolean(KEY_HAS_SHOW_ANSWER);
+            setAnswerShownResult(mHasShowAnswer);
+        }
     }
 
     private void setAnswerShownResult(boolean isAnswerShown) {
@@ -58,4 +66,9 @@ public class CheatActivity extends AppCompatActivity {
         setResult(RESULT_OK, data);
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putBoolean(KEY_HAS_SHOW_ANSWER, mHasShowAnswer);
+    }
 }
