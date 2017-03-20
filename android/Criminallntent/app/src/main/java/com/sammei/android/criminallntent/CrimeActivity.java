@@ -1,9 +1,8 @@
 package com.sammei.android.criminallntent;
 
-import android.app.FragmentManager;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.os.Bundle;
 
 public class CrimeActivity extends FragmentActivity {
 
