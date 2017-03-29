@@ -1,5 +1,7 @@
 package com.sammei.android.photogallery;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -42,21 +44,6 @@ public class PhotoGalleryFragment extends Fragment {
         setRetainInstance(true);
         setHasOptionsMenu(true);
         updateItems();
-
-        Handler responseHandler = new Handler();
-        mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
-        mThumbnailDownloader.setThumbnailDownloadListener(
-                new ThumbnailDownloader.ThumbnailDownloadListener<PhotoHolder>() {
-                    @Override
-                    public void onThumbnailDownloaded(PhotoHolder photoHolder, Bitmap thumbnail) {
-                        Drawable drawable = new BitmapDrawable(getResources(), thumbnail);
-                        photoHolder.bindDrawable(drawable);
-                    }
-                }
-        );
-        mThumbnailDownloader.start();
-        mThumbnailDownloader.getLooper();
-        Log.i(TAG, "Background thread started");
     }
 
     @Nullable
@@ -67,6 +54,35 @@ public class PhotoGalleryFragment extends Fragment {
         mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
         setupAdapter();
         return v;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        Handler responseHandler = new Handler();
+        mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
+        mThumbnailDownloader.setThumbnailDownloadListener(
+                new ThumbnailDownloader.ThumbnailDownloadListener<PhotoHolder>() {
+                    @Override
+                    public void onThumbnailDownloaded(PhotoHolder photoHolder, Bitmap thumbnail) {
+                        Log.i(TAG, "onThumbnailDownloaded " + getActivity());
+                        if (getActivity() != null) {
+                            Drawable drawable = new BitmapDrawable(getResources(), thumbnail);
+                            photoHolder.bindDrawable(drawable);
+                        }
+                    }
+                }
+        );
+        mThumbnailDownloader.start();
+        mThumbnailDownloader.getLooper();
+        Log.i(TAG, "Background thread started");
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        Log.i(TAG, "onDetach");
     }
 
     @Override
@@ -113,6 +129,13 @@ public class PhotoGalleryFragment extends Fragment {
                 searchView.setQuery(query, false);
             }
         });
+
+        MenuItem toggleItem = menu.findItem(R.id.menu_item_toggle_polling);
+        if (PollService.isServiceAlarmOn(getActivity())) {
+            toggleItem.setTitle(R.string.stop_polling);
+        } else {
+            toggleItem.setTitle(R.string.start_polling);
+        }
     }
 
     @Override
@@ -121,6 +144,11 @@ public class PhotoGalleryFragment extends Fragment {
             case R.id.menu_item_clear:
                 QueryPreferences.setStoredQuery(getActivity(), null);
                 updateItems();
+                return true;
+            case R.id.menu_item_toggle_polling:
+                boolean shouldStartAlarm = !PollService.isServiceAlarmOn(getActivity());
+                PollService.setServiceAlarm(getActivity(), shouldStartAlarm);
+                getActivity().invalidateOptionsMenu();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
