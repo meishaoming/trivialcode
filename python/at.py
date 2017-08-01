@@ -73,7 +73,7 @@ class ATProtocol(serial.threaded.LineReader):
 if __name__ == '__main__':
 
     try:
-        ser = serial.serial_for_url('/dev/cu.usbserial', baudrate=115200, timeout=1)
+        ser = serial.serial_for_url('/dev/cu.usbserial', baudrate=57600, timeout=1)
     except serial.SerialException:
         print('serial exception')
     else:
