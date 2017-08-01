@@ -1,28 +1,53 @@
 #!/usr/bin/env python3
 
 import socket
-import sys
+import select
+import time
 
-def echo(host="0", port=9900):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-    sock.bind((host, port))
-    sock.listen(10)
-    print("wait for connection ...")
+EOL1 = b'\n'
+
+serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+serversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+serversocket.bind(('0.0.0.0', 9900))
+serversocket.listen(1)
+serversocket.setblocking(0)
+
+print('listen on 0.0.0.0:', 9900)
+
+epoll = select.epoll()
+epoll.register(serversocket.fileno(), select.EPOLLIN)
+
+try:
+    connections = {}
+    request = b''
 
     while True:
-        conn, addr = sock.accept()
-        print("Connected by ", addr)
+        events = epoll.poll(1)
 
-        while True:
-            cmd = conn.recv(128)
-            if len(cmd) == 0:
-                conn.close()
-                break;
+        for fileno, event in events:
 
-            print(cmd);
-            conn.send(cmd)
+            if fileno == serversocket.fileno():
+                conn, address = serversocket.accept()
+                print("connect ", conn.fileno(), address)
+                conn.setblocking(0)
+                epoll.register(conn.fileno(), select.EPOLLIN)
+                connections[conn.fileno()] = conn
 
-if __name__ == '__main__':
-    echo()
+            elif event & select.EPOLLIN:
+                request = connections[fileno].recv(1024)
+                if EOL1 in request:
+                    print('-> ' + request.decode())
+                    s = str(time.time()) + ': ' + request.decode()
+                    connections[fileno].send(s.encode('utf-8'))
+
+                if len(request) == 0:
+                    print('close connect', fileno)
+                    epoll.unregister(fileno)
+                    connections[fileno].close()
+                    del connections[fileno]
+
+finally:
+    epoll.unregister(serversocket.fileno())
+    epoll.close()
+    serversocket.close()
+
