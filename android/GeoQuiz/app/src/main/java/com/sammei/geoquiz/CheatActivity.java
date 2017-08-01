@@ -57,6 +57,12 @@ public class CheatActivity extends AppCompatActivity {
                     int cx = mShowAnswer.getWidth() / 2;
                     int cy = mShowAnswer.getHeight() / 2;
                     float radius = mShowAnswer.getWidth();
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+                    int cx = mShowAnswer.getWidth() / 2;
+                    int cy = mShowAnswer.getHeight() / 2;
+                    float radius = mShowAnswer.getWidth();
                     Animator anim = ViewAnimationUtils.createCircularReveal(mShowAnswer, cx, cy, radius, 0);
                     anim.addListener(new AnimatorListenerAdapter() {
 
@@ -65,6 +71,14 @@ public class CheatActivity extends AppCompatActivity {
                             super.onAnimationEnd(animator);
                             mAnswerTextView.setVisibility(View.VISIBLE);
                             mShowAnswer.setVisibility(View.INVISIBLE);
+                        }
+
+                    });
+                    anim.start();
+                } else {
+                    mAnswerTextView.setVisibility(View.VISIBLE);
+                    mShowAnswer.setVisibility(View.INVISIBLE);
+                }
                         }
 
                     });
