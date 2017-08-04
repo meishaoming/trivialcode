@@ -58,22 +58,20 @@ class ATProtocol(serial.threaded.Protocol):
             self.buffer1.clear()
             self.write_line(command)
             lines = []
+            retval = False
             while True:
                 try:
                     line = self.responses.get(timeout=timeout)
                     timeout = 0.05
                     #print("%r -> %r" % (command, line))
-                    if response in line:
-                        lines.append(line)
-                    elif line == 'ERROR':
-                        lines.append(line)
-                    else:
-                        lines.append(line)
-                except queue.Empty:
-                    #print("Error: timeout, no output")
-                    print("%r -> %r" % (command, self.buffer1.decode(self.ENCODING, self.UNICODE_HANDLING)))
-                    return
+                    lines.append(line)
 
+                    if response in line:
+                        retval = True
+
+                except queue.Empty:
+                    print("%r -> %r" % (command, self.buffer1.decode(self.ENCODING, self.UNICODE_HANDLING)))
+                    return retval
 
 if __name__ == '__main__':
 
@@ -94,11 +92,10 @@ if __name__ == '__main__':
             n10.command('AT+CGATT?\r', response='+CGATT:')
 
             # tcp send
-            n10.command('AT+NETAPN="UNINET","",""\r')
-            n10.command('AT+XIIC=1\r')
-            n10.command('AT+XIIC?\r')
-            n10.command('AT+TCPCLOSE=1\r')
+#            n10.command('AT+NETAPN="UNINET","",""\r')
+#            n10.command('AT+XIIC=1\r')
+#            n10.command('AT+XIIC?\r')
+#            n10.command('AT+TCPCLOSE=1\r')
 
-
-
+            n10.command('AT+=1\r')
 

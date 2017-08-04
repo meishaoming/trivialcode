@@ -46,6 +46,7 @@ class ATProtocol(serial.threaded.LineReader):
                 logging.exception('_run_event')
 
     def handle_line(self, line):
+        print('response: [%r]' % line)
         self.responses.put(line)
 
     def handle_event(selfs, event):
@@ -53,21 +54,23 @@ class ATProtocol(serial.threaded.LineReader):
 
     def command(self, command, response='OK', timeout=5):
         with self.lock:
+            self.buffer.clear()
             self.write_line(command)
-            print("  -> %r" %command)
+            print("command: [%r]" %command)
             lines = []
             while True:
                 try:
                     line = self.responses.get(timeout=timeout)
-                    print("  <- %r" % (line))
+                    timeout = 0.5
+                    #print("  <- %r" % (line))
                     if line == response:
-                        return lines
+                        lines.append(line)
                     elif line == 'ERROR':
-                        return lines
+                        lines.append(line)
                     else:
                         lines.append(line)
                 except queue.Empty:
-                    print("Error: timeout, no output")
+                    #print("Error: timeout, no output")
                     return
 
 if __name__ == '__main__':
