@@ -317,6 +317,6 @@ if __name__ == '__main__':
                     modem.tcp_recv()
                     time.sleep(90)
                 else:
-                    break;
+                    tcp_connected = False
 
 
